@@ -2,51 +2,61 @@ import { useEffect, useState } from "react";
 
 import styles from './ReposList.module.css';
 
-const ReposList = ({nomeUsuario}) => {
+export default function ReposList({nomeUsuario}){
     const [repos, setRepos] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [erro, setErro] = useState("");
 
-    useEffect(() => {
-        setLoading(true);
-        fetch(`https://api.github.com/users/${nomeUsuario}/repos`)
-        .then(res => res.json())
-        .then(resJson => {
+    useEffect(()=> {
+        const reposCatch = async () => {
+            setLoading(true);
+            setErro("");
+        
 
-            setTimeout(()=>{
+        try{
+            const gitApi = await fetch(`http://api.github.com/users/${nomeUsuario}/repos`); 
+
+            if(!gitApi.ok){
+                throw new Error("User not found")
+            }
+
+            const res = await gitApi.json();
+
+            setTimeout(()=> {
+                setRepos(res);
                 setLoading(false);
-                setRepos(resJson);
-            }, 3000)
-            
-        } )
-    }, [nomeUsuario])
+            }, 3000);
+        } catch (e){
+            console.error(e.message);
+            setErro(e.message);
+            setLoading(false);
+            setRepos([]);
+        }
+    };
+        reposCatch();
+    },[nomeUsuario]);
+
     return (
         <div className="container">
-        {loading ?  (
-            <h1>Carregando...</h1>
-        ) : (
-
-            <ul className={styles.list}>
-            {repos.map(({id, name, language, html_url}) => (
-                <li className={styles.listItem} key={id}>
-                    <div className={styles.itemName}>
-                        <b>Nome:</b> {name}
-                    </div>
-
-                    <div className={styles.itemLanguage}>
-                        <b> Linguagem:</b> {language}
-                    </div>
-
-                    <a className={styles.itemLink} target="_blank" href={html_url}> Visite no Github</a>
-                    </li>
-
-                ))}
-                <li>Repositório</li>
-            </ul>
-        )}
-        
+            {loading ? (
+                <h3>Loading...</h3>
+            ) : erro ? (
+                <h2>ERROR</h2>
+            ) : (
+                <ul className={styles.list}>
+                    {repos.map(({id,name,language,html_url}) =>(
+                        <li key={id} className={styles.listItem}>
+                            <div className={styles.itemName}>
+                                <b>Nome: </b> {name}
+                            </div>
+                            <div className={styles.itemLanguage}>
+                                <b>Linguagem: </b> {language}
+                            </div>
+                            <a href={html_url} className={styles.itemLink} target="_blank">Visitar no Github</a>
+                        </li>
+                    ))}
+                </ul>
+            )}
         </div>
-        
     )
 }
-
-export default ReposList;
