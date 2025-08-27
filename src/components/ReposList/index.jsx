@@ -41,7 +41,7 @@ export default function ReposList({nomeUsuario}){
             {loading ? (
                 <h3>Loading...</h3>
             ) : erro ? (
-                <h2>ERROR</h2>
+                <h2>Usuário não encontrado</h2>
             ) : (
                 <ul className={styles.list}>
                     {repos.map(({id,name,language,html_url}) =>(
